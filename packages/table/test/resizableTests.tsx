@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
@@ -94,7 +94,7 @@ describe("Resizable", () => {
         expect(onResizeEnd.called).to.be.false;
     });
 
-    it.skip("renders a draggable resize handle", () => {
+    it("renders a draggable resize handle", () => {
         const onDoubleClick = sinon.spy();
         const onLayoutLock = sinon.spy();
         const onResizeEnd = sinon.spy();
@@ -114,20 +114,20 @@ describe("Resizable", () => {
                 <ResizableDiv />
             </Resizable>,
         );
-        const resizable = new ElementHarness(container);
-
-        const target = resizable.find(`.${Classes.TABLE_RESIZE_HANDLE_TARGET}`)!;
-        expect(target.element).to.exist;
+        const target = container.querySelector(`.${Classes.TABLE_RESIZE_HANDLE_TARGET}`);
+        expect(target).to.exist;
 
         // drag resize handle to the right by 10 pixels
-        target.mouse("mousemove").mouse("mousedown").mouse("mousemove", 10).mouse("mouseup", 10);
+        fireEvent.mouseDown(target!);
+        fireEvent.mouseMove(target!, { clientX: 10 });
+        fireEvent.mouseUp(target!, { clientX: 10 });
 
         expect(onLayoutLock.called).to.be.true;
         expect(onLayoutLock.lastCall.args[0]).to.be.false;
         expect(onSizeChanged.called).to.be.true;
         expect(onResizeEnd.called).to.be.true;
         expect(onDoubleClick.called).to.be.false;
-        expect(resizable.find(".resizable-div")!.bounds()!.width).to.equal(110);
+        expect(container.querySelector(".resizable-div")!.getBoundingClientRect().width).to.equal(110);
 
         onDoubleClick.resetHistory();
         onLayoutLock.resetHistory();
@@ -135,7 +135,10 @@ describe("Resizable", () => {
         onSizeChanged.resetHistory();
 
         // double click the resize handle
-        target.mouse("mousemove").mouse("mousedown").mouse("mouseup", 10).mouse("mousedown").mouse("mouseup", 10);
+        fireEvent.mouseDown(target!);
+        fireEvent.mouseUp(target!, { clientX: 10 });
+        fireEvent.mouseDown(target!);
+        fireEvent.mouseUp(target!, { clientX: 10 });
 
         expect(onLayoutLock.called).to.be.true;
         expect(onSizeChanged.called).to.be.false;
