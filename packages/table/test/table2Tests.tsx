@@ -37,7 +37,7 @@ import { type Region, Regions } from "../src/regions";
 import type { TableState } from "../src/tableState";
 
 import { CellType, expectCellLoading } from "./cellTestUtils";
-import { ElementHarness, ReactHarness } from "./harness";
+import { ElementHarness } from "./harness";
 import { createStringOfLength, createTableOfSize } from "./mocks/table";
 
 /**
@@ -52,7 +52,6 @@ describe("<Table2>", function (this) {
     const COLUMN_HEADER_SELECTOR = `.${Classes.TABLE_QUADRANT_MAIN} .${Classes.TABLE_COLUMN_HEADERS} .${Classes.TABLE_HEADER}`;
 
     let containerElement: HTMLElement | undefined;
-    const harness = new ReactHarness();
 
     beforeEach(() => {
         containerElement = document.createElement("div");
@@ -60,17 +59,9 @@ describe("<Table2>", function (this) {
     });
 
     afterEach(() => {
-        harness.unmount();
         if (containerElement !== undefined) {
-            // TODO(React 18): Replace deprecated ReactDOM methods. See: https://github.com/palantir/blueprint/issues/7167
-            // eslint-disable-next-line deprecation/deprecation
-            ReactDOM.unmountComponentAtNode(containerElement);
             containerElement.remove();
         }
-    });
-
-    after(() => {
-        harness.destroy();
     });
 
     describe("Basic rendering", () => {
@@ -372,7 +363,7 @@ describe("<Table2>", function (this) {
 
                 const saveTable = (t: Table2) => (table = t);
 
-                harness.mount(
+                render(
                     <Table2 ref={saveTable} numRows={4}>
                         <Column name="Column0" cellRenderer={renderCellLong} />
                         <Column name="Column1" cellRenderer={renderCellShort} />
@@ -1796,13 +1787,14 @@ describe("<Table2>", function (this) {
 
     // HACKHACK: https://github.com/palantir/blueprint/issues/5114
     it.skip("Accepts a sparse array of column widths", () => {
-        const table = harness.mount(
+        const { container } = render(
             <Table2 columnWidths={[null, 200, null]} defaultColumnWidth={75}>
                 <Column />
                 <Column />
                 <Column />
             </Table2>,
         );
+        const table = new ElementHarness(container);
 
         const columns = table.find(`.${Classes.TABLE_COLUMN_HEADERS}`)!;
         expect(columns.find(`.${Classes.TABLE_HEADER}`, 0)!.bounds()!.width).to.equal(75);
@@ -1823,28 +1815,32 @@ describe("<Table2>", function (this) {
             const columns = [<Column key="a" id="a" />, <Column key="b" id="b" />, <Column key="c" id="c" />];
 
             // default and explicit sizes sizes
-            const table0 = harness.mount(
+            const { container: container0 } = render(
                 <Table2 columnWidths={[null, 100, null]} defaultColumnWidth={50}>
                     {columns}
                 </Table2>,
             );
+            const table0 = new ElementHarness(container0);
             expectHeaderWidth(table0, 0, 50);
             expectHeaderWidth(table0, 1, 100);
             expectHeaderWidth(table0, 2, 50);
 
             // removing explicit size props
-            const table1 = harness.mount(<Table2>{columns}</Table2>);
+            const { container: container1 } = render(<Table2>{columns}</Table2>);
+            const table1 = new ElementHarness(container1);
             expectHeaderWidth(table1, 0, 50);
             expectHeaderWidth(table1, 1, 100);
             expectHeaderWidth(table1, 2, 50);
 
             // re-arranging and REMOVING columns
-            const table2 = harness.mount(<Table2>{[columns[1], columns[0]]}</Table2>);
+            const { container: container2 } = render(<Table2>{[columns[1], columns[0]]}</Table2>);
+            const table2 = new ElementHarness(container2);
             expectHeaderWidth(table2, 0, 100);
             expectHeaderWidth(table2, 1, 50);
 
             // re-arranging and ADDING columns
-            const table3 = harness.mount(<Table2 defaultColumnWidth={51}>{columns}</Table2>);
+            const { container: container3 } = render(<Table2 defaultColumnWidth={51}>{columns}</Table2>);
+            const table3 = new ElementHarness(container3);
             expectHeaderWidth(table3, 0, 50);
             expectHeaderWidth(table3, 1, 100);
             expectHeaderWidth(table3, 2, 51);
@@ -1854,28 +1850,32 @@ describe("<Table2>", function (this) {
             const columns = [<Column key="a" id="a" />, <Column key="b" />, <Column key="c" />];
 
             // default and explicit sizes sizes
-            const table0 = harness.mount(
+            const { container: container0 } = render(
                 <Table2 columnWidths={[null, 100, null]} defaultColumnWidth={50}>
                     {columns}
                 </Table2>,
             );
+            const table0 = new ElementHarness(container0);
             expectHeaderWidth(table0, 0, 50);
             expectHeaderWidth(table0, 1, 100);
             expectHeaderWidth(table0, 2, 50);
 
             // removing explicit size props
-            const table1 = harness.mount(<Table2>{columns}</Table2>);
+            const { container: container1 } = render(<Table2>{columns}</Table2>);
+            const table1 = new ElementHarness(container1);
             expectHeaderWidth(table1, 0, 50);
             expectHeaderWidth(table1, 1, 100);
             expectHeaderWidth(table1, 2, 50);
 
             // re-arranging and REMOVING columns
-            const table2 = harness.mount(<Table2>{[columns[1], columns[0]]}</Table2>);
+            const { container: container2 } = render(<Table2>{[columns[1], columns[0]]}</Table2>);
+            const table2 = new ElementHarness(container2);
             expectHeaderWidth(table2, 0, 50); // <= difference when no IDs
             expectHeaderWidth(table2, 1, 50);
 
             // re-arranging and ADDING columns
-            const table3 = harness.mount(<Table2 defaultColumnWidth={51}>{columns}</Table2>);
+            const { container: container3 } = render(<Table2 defaultColumnWidth={51}>{columns}</Table2>);
+            const table3 = new ElementHarness(container3);
             expectHeaderWidth(table3, 0, 50);
             expectHeaderWidth(table3, 1, 50); // <= difference when no IDs
             expectHeaderWidth(table3, 2, 51);
