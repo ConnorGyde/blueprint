@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { render } from "@testing-library/react";
 import { expect } from "chai";
 import { type MountRendererProps, type ReactWrapper, mount as untypedMount } from "enzyme";
 import * as React from "react";
@@ -36,7 +37,7 @@ import { type Region, Regions } from "../src/regions";
 import type { TableState } from "../src/tableState";
 
 import { CellType, expectCellLoading } from "./cellTestUtils";
-import { type ElementHarness, ReactHarness } from "./harness";
+import { ElementHarness, ReactHarness } from "./harness";
 import { createStringOfLength, createTableOfSize } from "./mocks/table";
 
 /**
@@ -74,13 +75,14 @@ describe("<Table2>", function (this) {
 
     describe("Basic rendering", () => {
         it("Defaults to Base26Alpha column names", () => {
-            const table = harness.mount(
+            const { container } = render(
                 <Table2>
                     <Column />
                     <Column />
                     <Column name="My Name" />
                 </Table2>,
             );
+            const table = new ElementHarness(container);
 
             expect(table.find(`.${Classes.TABLE_COLUMN_NAME_TEXT}`, 2)!.text()).to.equal("My Name");
             expect(table.find(`.${Classes.TABLE_COLUMN_NAME_TEXT}`, 1)!.text()).to.equal("B");
@@ -88,33 +90,36 @@ describe("<Table2>", function (this) {
 
         it("Adds custom className to table container", () => {
             const CLASS_NAME = "my-custom-class-name";
-            const table = harness.mount(
+            const { container } = render(
                 <Table2 className={CLASS_NAME}>
                     <Column />
                     <Column />
                     <Column />
                 </Table2>,
             );
+            const table = new ElementHarness(container);
             const hasCustomClass = table.find(`.${Classes.TABLE_CONTAINER}`, 0)!.hasClass(CLASS_NAME);
             expect(hasCustomClass).to.be.true;
         });
 
         it("Renders without ghost cells", () => {
-            const table = harness.mount(
+            const { container } = render(
                 <Table2>
                     <Column />
                 </Table2>,
             );
+            const table = new ElementHarness(container);
             expect(table.find(COLUMN_HEADER_SELECTOR, 0)!.element).to.be.ok;
             expect(table.find(COLUMN_HEADER_SELECTOR, 1)!.element).to.not.be.ok;
         });
 
         it("Renders ghost cells", () => {
-            const table = harness.mount(
+            const { container } = render(
                 <Table2 enableGhostCells={true}>
                     <Column />
                 </Table2>,
             );
+            const table = new ElementHarness(container);
 
             expect(table.find(COLUMN_HEADER_SELECTOR, 0)!.element).to.be.ok;
             expect(table.find(COLUMN_HEADER_SELECTOR, 1)!.element).to.be.ok;
@@ -126,12 +131,13 @@ describe("<Table2>", function (this) {
                 TableLoadingOption.COLUMN_HEADERS,
                 TableLoadingOption.ROW_HEADERS,
             ];
-            const tableHarness = harness.mount(
+            const { container } = render(
                 <Table2 loadingOptions={loadingOptions} numRows={2}>
                     <Column name="Column0" cellRenderer={renderDummyCell} />
                     <Column name="Column1" cellRenderer={renderDummyCell} />
                 </Table2>,
             );
+            const tableHarness = new ElementHarness(container);
 
             expect(tableHarness.text()).to.equal("");
 
@@ -324,7 +330,7 @@ describe("<Table2>", function (this) {
             const saveTable = (t: Table2) => (table = t);
 
             beforeEach(() => {
-                harness.mount(
+                render(
                     <Table2 ref={saveTable} numRows={NUM_ROWS}>
                         <Column name="Column0" cellRenderer={cellRenderer} />
                         <Column name="Column1" cellRenderer={cellRenderer} />
@@ -898,7 +904,7 @@ describe("<Table2>", function (this) {
             // need to mount directly into the DOM for this test to work
             let table: Table2 | undefined;
             const saveTable = (ref: Table2) => (table = ref);
-            const tableElement = harness.mount(
+            const { container } = render(
                 <Table2 ref={saveTable} numRows={1} numFrozenColumns={1} columnWidths={columnWidths}>
                     <Column name="Column0" cellRenderer={cellRenderer} />
                     <Column name="Column1" cellRenderer={cellRenderer} />
@@ -907,6 +913,7 @@ describe("<Table2>", function (this) {
                     <Column name="Column4" cellRenderer={cellRenderer} />
                 </Table2>,
             );
+            const tableElement = new ElementHarness(container);
 
             // scroll the frozen column out of view in the MAIN quadrant,
             // and expect a non-zero height.
@@ -934,7 +941,7 @@ describe("<Table2>", function (this) {
         });
 
         function mountTable(tableProps: Partial<TableProps> = {}) {
-            return harness.mount(
+            const { container } = render(
                 // set the row height so small so they can all fit in the viewport and be rendered
                 <Table2
                     defaultRowHeight={1}
@@ -949,6 +956,7 @@ describe("<Table2>", function (this) {
                     <Column cellRenderer={renderDummyCell} />
                 </Table2>,
             );
+            return new ElementHarness(container);
         }
 
         function getRowHeadersWrapper(table: ElementHarness) {
@@ -1132,7 +1140,7 @@ describe("<Table2>", function (this) {
         });
 
         function mountTable(props: Partial<TableProps>) {
-            const table = harness.mount(
+            const { container } = render(
                 <div style={{ height: CONTAINER_HEIGHT_IN_PX, width: CONTAINER_WIDTH_IN_PX }}>
                     <Table2
                         columnWidths={Array(NUM_COLUMNS).fill(COLUMN_WIDTH_IN_PX)}
@@ -1148,7 +1156,7 @@ describe("<Table2>", function (this) {
                     </Table2>
                 </div>,
             );
-            return table;
+            return new ElementHarness(container);
         }
 
         function getColumnHeadersWrapper(table: ElementHarness) {
