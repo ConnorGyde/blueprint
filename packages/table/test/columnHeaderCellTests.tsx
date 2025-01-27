@@ -85,24 +85,22 @@ describe("<ColumnHeaderCell>", () => {
             expect(text).to.equal("Header of 2");
         });
 
-        it("renders custom menu items with a menuRenderer callback", done => {
+        it("renders custom menu items with a menuRenderer callback", async () => {
             const columnHeaderCellRenderer = (columnIndex: number) => (
                 <ColumnHeaderCell name={`COL-${columnIndex}`} menuRenderer={renderMenu} />
             );
             const { container } = render(createTableOfSize(3, 2, { columnHeaderCellRenderer }));
             const table = new ElementHarness(container);
-            expectMenuToOpen(table);
 
-            // popovers need a tick to render contents after they open
-            setTimeout(() => {
-                // attempt to click one of the menu items
-                ElementHarness.document().find('[data-icon="export"]')!.mouse("click");
-                expect(menuClickSpy.called, "expected menu item click handler to be called").to.be.true;
-                done();
-            });
+            await expectMenuToOpen(table);
+
+            // attempt to click one of the menu items
+            ElementHarness.document().find('[data-icon="export"]')!.mouse("click");
+
+            expect(menuClickSpy.called, "expected menu item click handler to be called").to.be.true;
         });
 
-        it("custom menu supports popover props", done => {
+        it("custom menu supports popover props", async () => {
             const expectedMenuPopoverProps = {
                 placement: "right-start" as const,
                 popoverClassName: "test-popover-class",
@@ -116,21 +114,18 @@ describe("<ColumnHeaderCell>", () => {
             );
             const { container } = render(createTableOfSize(3, 2, { columnHeaderCellRenderer }));
             const table = new ElementHarness(container);
-            expectMenuToOpen(table);
 
-            // popovers need a tick to render contents after they open
-            setTimeout(() => {
-                const popover = ElementHarness.document().find(`.${CoreClasses.POPOVER}`);
-                expect(
-                    popover.hasClass(expectedMenuPopoverProps.popoverClassName),
-                    `expected popover element to have ${expectedMenuPopoverProps.popoverClassName} class`,
-                ).to.be.true;
-                expect(
-                    popover.hasClass(`${CoreClasses.POPOVER_CONTENT_PLACEMENT}-right`),
-                    `expected popover element to have '${expectedMenuPopoverProps.placement}' placement classes applied`,
-                ).to.be.true;
-                done();
-            });
+            await expectMenuToOpen(table);
+
+            const popover = ElementHarness.document().find(`.${CoreClasses.POPOVER}`);
+            expect(
+                popover.hasClass(expectedMenuPopoverProps.popoverClassName),
+                `expected popover element to have ${expectedMenuPopoverProps.popoverClassName} class`,
+            ).to.be.true;
+            expect(
+                popover.hasClass(`${CoreClasses.POPOVER_CONTENT_PLACEMENT}-right`),
+                `expected popover element to have '${expectedMenuPopoverProps.placement}' placement classes applied`,
+            ).to.be.true;
         });
 
         it("renders loading state properly", () => {
