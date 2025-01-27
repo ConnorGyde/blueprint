@@ -21,7 +21,7 @@
 
 /* eslint-disable deprecation/deprecation, @blueprintjs/no-deprecated-components, sort-keys */
 
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import { type MountRendererProps, type ReactWrapper, mount as untypedMount } from "enzyme";
 import * as React from "react";
@@ -736,7 +736,10 @@ describe("<Table>", function (this) {
             const resizeHandleTarget = getResizeHandle(rows, 0);
 
             expect(resizeHandleTarget).not.to.be.undefined;
-            resizeHandleTarget!.mouse("mousemove").mouse("mousedown").mouse("mousemove", 0, 2).mouse("mouseup");
+            fireEvent.mouseMove(resizeHandleTarget.element!);
+            fireEvent.mouseDown(resizeHandleTarget.element!);
+            fireEvent.mouseMove(resizeHandleTarget.element!, { clientX: 0, clientY: 2 });
+            fireEvent.mouseUp(resizeHandleTarget.element!);
 
             expect(rows.find(`.${Classes.TABLE_HEADER}`, 0)!.bounds()!.height).to.equal(3);
             expect(rows.find(`.${Classes.TABLE_HEADER}`, 1)!.bounds()!.height).to.equal(3);
@@ -765,10 +768,12 @@ describe("<Table>", function (this) {
             const resizeHandleTarget = getResizeHandle(getRowHeadersWrapper(table), 0);
 
             expect(resizeHandleTarget).not.to.be.undefined;
-            resizeHandleTarget!.mouse("mousemove").mouse("mousedown").mouse("mousemove", 0, 2);
+            fireEvent.mouseMove(resizeHandleTarget.element!);
+            fireEvent.mouseDown(resizeHandleTarget.element!);
+            fireEvent.mouseMove(resizeHandleTarget.element!, { clientX: 0, clientY: 2 });
             expect(table.find(`.${Classes.TABLE_SELECTION_REGION}`)!.exists()).to.be.false;
 
-            resizeHandleTarget!.mouse("mouseup");
+            fireEvent.mouseUp(resizeHandleTarget.element!);
             expect(table.find(`.${Classes.TABLE_SELECTION_REGION}`)!.exists()).to.be.true;
         });
 

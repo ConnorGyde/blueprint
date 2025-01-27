@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import { type MountRendererProps, type ReactWrapper, mount as untypedMount } from "enzyme";
 import * as React from "react";
@@ -791,7 +791,10 @@ describe("<Table2>", function (this) {
             const rows = getRowHeadersWrapper(table)!;
             const resizeHandleTarget = getResizeHandle(rows, 0)!;
 
-            resizeHandleTarget.mouse("mousemove").mouse("mousedown").mouse("mousemove", 0, 2).mouse("mouseup");
+            fireEvent.mouseMove(resizeHandleTarget.element!);
+            fireEvent.mouseDown(resizeHandleTarget.element!);
+            fireEvent.mouseMove(resizeHandleTarget.element!, { clientX: 0, clientY: 2 });
+            fireEvent.mouseUp(resizeHandleTarget.element!);
 
             expect(rows.find(`.${Classes.TABLE_HEADER}`, 0)!.bounds()!.height).to.equal(3);
             expect(rows.find(`.${Classes.TABLE_HEADER}`, 1)!.bounds()!.height).to.equal(3);
@@ -818,10 +821,12 @@ describe("<Table2>", function (this) {
             const table = mountTable();
             const resizeHandleTarget = getResizeHandle(getRowHeadersWrapper(table)!, 0)!;
 
-            resizeHandleTarget.mouse("mousemove").mouse("mousedown").mouse("mousemove", 0, 2);
+            fireEvent.mouseMove(resizeHandleTarget.element!);
+            fireEvent.mouseDown(resizeHandleTarget.element!);
+            fireEvent.mouseMove(resizeHandleTarget.element!, { clientX: 0, clientY: 2 });
             expect(table.find(`.${Classes.TABLE_SELECTION_REGION}`)!.exists()).to.be.false;
 
-            resizeHandleTarget.mouse("mouseup");
+            fireEvent.mouseUp(resizeHandleTarget.element!);
             expect(table.find(`.${Classes.TABLE_SELECTION_REGION}`)!.exists()).to.be.true;
         });
 
