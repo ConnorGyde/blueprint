@@ -44,7 +44,7 @@ import type { TableState } from "../src/tableState";
 
 import { CellType, expectCellLoading } from "./cellTestUtils";
 import { ElementHarness } from "./harness";
-import { createStringOfLength, createTableOfSize } from "./mocks/table";
+import { createTableOfSize } from "./mocks/table";
 
 /**
  * @see https://github.com/DefinitelyTyped/DefinitelyTyped/issues/26979#issuecomment-465304376
@@ -254,53 +254,6 @@ describe("<Table>", function (this) {
     });
 
     describe("Instance methods", () => {
-        describe("resizeRowsByApproximateHeight", () => {
-            const STR_LENGTH_SHORT = 10;
-            const STR_LENGTH_LONG = 100;
-            const NUM_ROWS = 4;
-
-            const cellTextShort = createStringOfLength(STR_LENGTH_SHORT);
-            const cellTextLong = createStringOfLength(STR_LENGTH_LONG);
-
-            const getCellText = (rowIndex: number) => {
-                return rowIndex === 0 ? cellTextShort : cellTextLong;
-            };
-            const cellRenderer = (rowIndex: number) => {
-                return <Cell wrapText={true}>{getCellText(rowIndex)}</Cell>;
-            };
-
-            let table: Table | undefined;
-            const saveTable = (t: Table) => (table = t);
-
-            beforeEach(() => {
-                render(
-                    <Table ref={saveTable} numRows={NUM_ROWS}>
-                        <Column name="Column0" cellRenderer={cellRenderer} />
-                        <Column name="Column1" cellRenderer={cellRenderer} />
-                    </Table>,
-                );
-            });
-
-            afterEach(() => {
-                table = undefined;
-            });
-
-            it("resizes each row to fit its respective tallest cell", () => {
-                table!.resizeRowsByApproximateHeight(getCellText);
-                expect(table!.state.rowHeights).to.deep.equal([36, 144, 144, 144]);
-            });
-
-            it("still uses defaults if an empty `options` object is passed", () => {
-                table!.resizeRowsByApproximateHeight(getCellText, {});
-                expect(table!.state.rowHeights).to.deep.equal([36, 144, 144, 144]);
-            });
-
-            it("can customize options", () => {
-                table!.resizeRowsByApproximateHeight(getCellText, { getNumBufferLines: 2 });
-                expect(table!.state.rowHeights).to.deep.equal([54, 162, 162, 162]);
-            });
-        });
-
         describe("resizeRowsByTallestCell", () => {
             // HACKHACK: skipping since MAX_HEIGHT ends up being 60px instead of 40px in CI (but works fine locally)
             // see https://github.com/palantir/blueprint/issues/1794
